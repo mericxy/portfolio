@@ -1,0 +1,27 @@
+---
+const skills = [
+  { name: "JavaScript", icon: "devicon-javascript-plain colored", level: "Advanced" },
+  { name: "C", icon: "devicon-c-plain colored", level: "Intermediate" },
+  { name: "Kotlin", icon: "devicon-kotlin-plain colored", level: "Intermediate" },
+  { name: "Swift", icon: "devicon-swift-plain colored", level: "Intermediate (Mobile Development)" },
+  { name: "Python", icon: "devicon-python-plain colored", level: "Intermediate" },
+  { name: "UI/UX Design", icon: "devicon-figma-plain colored", level: "Experience with modern design practices" },
+  { name: "DevOps", icon: "devicon-docker-plain colored", level: "Experience with CI/CD and deployments" },
+];
+---
+
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold">Skills</h2>
+  <ul class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+    {skills.map((skill) => (
+      <li class="flex items-center gap-3 p-4 border rounded-xl shadow-sm hover:shadow-md transition hover:border-blue-600">
+        <i class={`${skill.icon} text-3xl`}></i>
+        <div>
+          <p class="font-semibold">{skill.name}</p>
+          <p class="text-sm text-gray-600">{skill.level}</p>
+        </div>
+      </li>
+
+    ))}
+  </ul>
+</section>

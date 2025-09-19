@@ -1,0 +1,35 @@
+---
+const { title = "My Portfolio" } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+  </head>
+  <body class="bg-white text-gray-900 font-sans antialiased">
+    <!-- Navbar -->
+    <header class="p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
+      <nav class="flex justify-between items-center max-w-5xl mx-auto">
+        <a href="/" class="text-xl font-bold tracking-tight hover:text-blue-600 transition">Portfolio</a>
+        <ul class="flex gap-6 text-sm font-medium">
+          <li><a href="/about" class="hover:text-blue-600 transition">About</a></li>
+          <li><a href="/projects" class="hover:text-blue-600 transition">Projects</a></li>
+          <li><a href="/contact" class="hover:text-blue-600 transition">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <!-- Main -->
+    <main class="max-w-5xl mx-auto p-6">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="p-6 text-center text-sm text-gray-500 border-t border-gray-200">
+      © {new Date().getFullYear()} Márcio Éric — Built with Astro 🚀
+    </footer>
+  </body>
+</html>
