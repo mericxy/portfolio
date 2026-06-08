@@ -2,17 +2,36 @@
 import DefaultLayout from "../layouts/DefaultLayout.astro";
 import Skills from "../components/Skills.astro";
 
-const username = "mericxy";
-const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated`);
-const repos = await response.json();
+const repos = [
+  {
+    html_url: "#",
+    name: "Exemplo de Projeto 1",
+    description: "Este é um projeto de exemplo para agilizar o desenvolvimento.",
+  },
+  {
+    html_url: "#",
+    name: "Exemplo de Projeto 2",
+    description: "Este é outro projeto de exemplo para testar a exibição.",
+  },
+  {
+    html_url: "#",
+    name: "Exemplo de Projeto 3",
+    description: "Um terceiro projeto de exemplo, sem conexão com a API.",
+  },
+  {
+    html_url: "#",
+    name: "Exemplo de Projeto 4",
+    description: "Quarto e último projeto de exemplo temporário.",
+  },
+];
 ---
 
 <DefaultLayout title="Home | Portfolio">
   <!-- Hero Section -->
   <section class="text-center my-12 space-y-4">
-    <h1 class="text-4xl font-bold">Hi, I'm Márcio Éric</h1>
+    <h1 class="text-4xl font-bold text-blue-600">Hi, I'm Márcio Éric</h1>
     <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-      Software Engineering student at UFAM-ICET, Frontend Developer at MOBA4AI, 
+      Software Engineering student at UFAM-ICET, Frontend Developer at MOBA4AI,
       passionate about web and mobile development, AI, and DevOps.
     </p>
   </section>
@@ -21,8 +40,8 @@ const repos = await response.json();
   <section class="my-12 space-y-4">
     <h2 class="text-2xl font-bold">About Me</h2>
     <p class="text-gray-700">
-      I am 23 years old and currently in the 8th semester of the Software Engineering 
-      program at UFAM-ICET. Member of NAVIR research group and developer at MOBA4AI, 
+      I am 24 years old and currently in the 9th semester of the Software Engineering
+      program at UFAM-ICET. Member of NAVIR research group and developer at MOBA4AI,
       working with frontend, UI/UX, AI integrations, and DevOps.
     </p>
     <a href="/about" class="text-blue-600 underline">Read more →</a>
@@ -47,7 +66,7 @@ const repos = await response.json();
         </li>
       ))}
     </ul>
-    <a href="/projects" 
+    <a href="/projects"
 		class="inline-block mt-4 text-blue-600 hover:text-blue-700 font-medium transition">
 		View all projects →
 	</a>
