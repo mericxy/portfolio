@@ -13,6 +13,7 @@ export interface GitHubRepository {
   forks_count: number;
   updated_at: string;
   pushed_at: string | null;
+  private: boolean;
   fork: boolean;
   archived: boolean;
 }
@@ -62,7 +63,7 @@ function unavailable<T>(fallback: T): GitHubData<T> {
 
 async function requestGitHub<T>(path: string, fallback: T): Promise<GitHubData<T>> {
   try {
-    const token = import.meta.env.GITHUB_TOKEN;
+    const token = import.meta.env.GITHUB_TOKEN?.trim();
     const response = await fetch(`${githubApiUrl}${path}`, {
       headers: {
         Accept: "application/vnd.github+json",
@@ -216,7 +217,8 @@ export function getGitHubRepositories(
             repository !== null &&
             typeof (repository as GitHubRepository).id === "number" &&
             typeof (repository as GitHubRepository).name === "string" &&
-            typeof (repository as GitHubRepository).html_url === "string",
+            typeof (repository as GitHubRepository).html_url === "string" &&
+            (repository as GitHubRepository).private === false,
         )
       : [],
   }));
