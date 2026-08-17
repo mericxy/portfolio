@@ -1,0 +1,102 @@
+---
+interface Props {
+  number: string;
+  eyebrow: string;
+  title: readonly [string, string];
+  description?: string;
+  headingId: string;
+}
+
+const { number, eyebrow, title, description, headingId } = Astro.props;
+---
+
+<header class="section-heading editorial-grid">
+  <div class="section-heading__meta">
+    <span class="section-heading__number">{number}</span>
+    <span>{eyebrow}</span>
+  </div>
+  <h2 id={headingId} class="section-heading__title">
+    <span>{title[0]}</span>
+    <span>{title[1]}</span>
+  </h2>
+  {description && <p class="section-heading__description">{description}</p>}
+</header>
+
+<style>
+  .section-heading {
+    align-items: start;
+  }
+
+  .section-heading__meta {
+    display: flex;
+    grid-column: 1 / 4;
+    gap: var(--space-3);
+    padding-top: 0.55rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .section-heading__number {
+    color: var(--color-accent-bright);
+  }
+
+  .section-heading__title {
+    grid-column: 4 / 10;
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: var(--text-section-title);
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 64, "SOFT" 18, "WONK" 0.1;
+    font-weight: 580;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--line-height-tight);
+    text-wrap: balance;
+  }
+
+  .section-heading__title span {
+    display: block;
+  }
+
+  .section-heading__description {
+    grid-column: 10 / 13;
+    max-width: 31ch;
+    padding-top: 0.55rem;
+    color: var(--color-text-secondary);
+    font-size: var(--text-caption);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 64rem) {
+    .section-heading__meta {
+      grid-column: 1 / 3;
+    }
+
+    .section-heading__title {
+      grid-column: 3 / 9;
+    }
+
+    .section-heading__description {
+      grid-column: 9 / 13;
+    }
+  }
+
+  @media (max-width: 48rem) {
+    .section-heading__meta,
+    .section-heading__title,
+    .section-heading__description {
+      grid-column: 1 / -1;
+    }
+
+    .section-heading__title {
+      margin-top: var(--space-5);
+    }
+
+    .section-heading__description {
+      max-width: 50ch;
+      margin-top: var(--space-4);
+    }
+  }
+</style>

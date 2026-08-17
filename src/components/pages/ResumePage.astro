@@ -1,0 +1,378 @@
+---
+import DefaultLayout from "../../layouts/DefaultLayout.astro";
+import { experienceEntries, formatExperiencePeriod } from "../../data/experience";
+import { site } from "../../data/site";
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+import ExternalLink from "../ui/ExternalLink.astro";
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const content = ui[locale].resume;
+const presentLabel = ui[locale].home.experience.present;
+---
+
+<DefaultLayout {locale} title={content.title} description={content.description}>
+  <article class="resume-page container" aria-labelledby="resume-title">
+    <header class="resume-hero">
+      <p class="resume-hero__file">{content.fileLabel}</p>
+      <div class="resume-hero__heading">
+        <h1 id="resume-title">{site.name}</h1>
+        <p>{content.role}</p>
+      </div>
+      <p class="resume-hero__summary">{content.summary}</p>
+      <div class="resume-actions" aria-label={content.actionsLabel}>
+        <ExternalLink href={site.resumePdfUrl} class="resume-action resume-action--primary" {locale}>
+          {content.downloadPdf} <span aria-hidden="true">↓</span>
+        </ExternalLink>
+        <ExternalLink href={site.resumeRepositoryUrl} class="resume-action" {locale}>
+          <span aria-hidden="true">&gt;</span> {content.sourceLink}
+        </ExternalLink>
+      </div>
+    </header>
+
+    <div class="resume-document">
+      <section class="resume-section" aria-labelledby="resume-experience-title">
+        <h2 id="resume-experience-title">{content.experienceTitle}</h2>
+        <div class="resume-experience-list">
+          {experienceEntries.map((experience) => (
+            <article class="resume-experience">
+              <p class="resume-experience__period">{formatExperiencePeriod(experience, locale, presentLabel)}</p>
+              <div>
+                <h3>{experience.role[locale]}</h3>
+                <p class="resume-experience__organization">{experience.organization}</p>
+                <p class="resume-experience__description">{experience.description[locale]}</p>
+                <ul class="resume-technology-list" aria-label={`${ui[locale].home.experience.technologiesLabel} ${experience.role[locale]}`}>
+                  {experience.technologies[locale].map((technology) => <li>{technology}</li>)}
+                </ul>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="resume-section" aria-labelledby="resume-education-title">
+        <h2 id="resume-education-title">{content.educationTitle}</h2>
+        <div class="resume-education">
+          <p class="resume-education__period">{content.educationPeriod}</p>
+          <div>
+            <h3>{content.educationDegree}</h3>
+            <p>{content.educationInstitution}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="resume-section" aria-labelledby="resume-technologies-title">
+        <h2 id="resume-technologies-title">{content.technologiesTitle}</h2>
+        <dl class="resume-skills">
+          {content.technologyGroups.map((group) => (
+            <div>
+              <dt>{group.label}</dt>
+              <dd>{group.items.join(" / ")}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section class="resume-section resume-links" aria-labelledby="resume-links-title">
+        <h2 id="resume-links-title">{content.linksTitle}</h2>
+        <ul>
+          <li><a href={site.emailUrl}>{site.email}</a></li>
+          <li><ExternalLink href={site.githubUrl} {locale}>github.com/mericxy</ExternalLink></li>
+          <li><ExternalLink href={site.linkedInUrl} {locale}>linkedin.com/in/marcioericlvalente</ExternalLink></li>
+        </ul>
+      </section>
+    </div>
+  </article>
+</DefaultLayout>
+
+<style>
+  .resume-page {
+    padding-block: clamp(3rem, 7vw, 6rem) var(--section-spacing);
+  }
+
+  .resume-hero {
+    display: grid;
+    padding-bottom: clamp(3rem, 7vw, 5.5rem);
+    border-bottom: 1px solid var(--color-border-subtle);
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: var(--grid-gap);
+  }
+
+  .resume-hero__file,
+  .resume-experience__period,
+  .resume-education__period,
+  .resume-skills dt {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    letter-spacing: 0.05em;
+  }
+
+  .resume-hero__file {
+    grid-column: 1 / -1;
+    margin-bottom: var(--space-6);
+  }
+
+  .resume-hero__heading {
+    grid-column: 1 / 6;
+  }
+
+  .resume-hero h1 {
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: clamp(3.25rem, 8vw, 6.75rem);
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 64, "SOFT" 18, "WONK" 0.1;
+    font-weight: 580;
+    letter-spacing: var(--tracking-tight);
+    line-height: 0.95;
+  }
+
+  .resume-hero__heading p {
+    margin-top: var(--space-4);
+    color: var(--color-accent-bright);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .resume-hero__summary {
+    grid-column: 6 / -1;
+    align-self: end;
+    color: var(--color-text-secondary);
+    font-size: var(--text-body-large);
+  }
+
+  .resume-actions {
+    display: flex;
+    grid-column: 1 / -1;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    margin-top: var(--space-7);
+  }
+
+  :global(.resume-action) {
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    font-weight: 650;
+    letter-spacing: var(--tracking-label);
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  :global(.resume-action--primary) {
+    padding-inline: var(--space-5);
+    border: 1px solid var(--color-accent);
+    color: var(--color-text-primary);
+  }
+
+  :global(.resume-action:hover) {
+    color: var(--color-accent-bright);
+  }
+
+  .resume-document {
+    max-width: 58rem;
+    margin-inline: auto;
+  }
+
+  .resume-section {
+    padding-block: clamp(3rem, 7vw, 5.5rem);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .resume-section h2 {
+    margin-bottom: var(--space-7);
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 48, "SOFT" 18, "WONK" 0.1;
+    font-weight: 580;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  .resume-experience,
+  .resume-education {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.65fr) minmax(0, 1.7fr);
+    gap: var(--grid-gap);
+  }
+
+  .resume-experience + .resume-experience {
+    margin-top: var(--space-7);
+    padding-top: var(--space-7);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .resume-experience h3,
+  .resume-education h3 {
+    color: var(--color-text-primary);
+    font-size: clamp(1.25rem, 2vw, 1.6rem);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+  }
+
+  .resume-experience__organization {
+    margin-top: var(--space-2);
+    color: var(--color-accent-bright);
+    font-weight: 620;
+  }
+
+  .resume-experience__description {
+    margin-top: var(--space-4);
+    color: var(--color-text-secondary);
+  }
+
+  .resume-technology-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    list-style: none;
+  }
+
+  .resume-technology-list li:not(:last-child)::after {
+    margin-left: var(--space-2);
+    color: rgb(var(--color-accent-rgb) / 55%);
+    content: "/";
+  }
+
+  .resume-education p:last-child {
+    margin-top: var(--space-2);
+    color: var(--color-text-secondary);
+  }
+
+  .resume-skills {
+    display: grid;
+    gap: 0;
+  }
+
+  .resume-skills div {
+    display: grid;
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--color-border-subtle);
+    grid-template-columns: minmax(9rem, 0.65fr) minmax(0, 1.7fr);
+    gap: var(--grid-gap);
+  }
+
+  .resume-skills div:last-child {
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .resume-skills dd {
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+
+  .resume-links ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    list-style: none;
+  }
+
+  .resume-links a {
+    color: var(--color-accent-bright);
+  }
+
+  @media (max-width: 48rem) {
+    .resume-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .resume-hero__file,
+    .resume-hero__heading,
+    .resume-hero__summary,
+    .resume-actions {
+      grid-column: 1;
+    }
+
+    .resume-hero__summary {
+      margin-top: var(--space-6);
+    }
+
+    .resume-actions {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .resume-experience,
+    .resume-education,
+    .resume-skills div {
+      grid-template-columns: 1fr;
+    }
+
+    .resume-experience__period,
+    .resume-education__period {
+      margin-bottom: var(--space-3);
+    }
+
+    .resume-links ul {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+
+  @media print {
+    :global(.site-header),
+    :global(.site-footer),
+    :global(.page-backdrop),
+    .resume-actions {
+      display: none !important;
+    }
+
+    :global(html),
+    :global(body) {
+      background: #fff !important;
+      color: #111 !important;
+    }
+
+    .resume-page {
+      --color-text-primary: #111;
+      --color-text-secondary: #333;
+      --color-text-muted: #555;
+      --color-accent-bright: #174d85;
+      --color-border-subtle: rgb(0 0 0 / 18%);
+      max-width: none;
+      padding: 0;
+    }
+
+    .resume-hero,
+    .resume-section {
+      padding-block: 1.25rem;
+    }
+
+    .resume-hero h1 {
+      font-size: 3rem;
+    }
+
+    .resume-experience,
+    .resume-education,
+    .resume-skills div {
+      break-inside: avoid;
+    }
+
+    .resume-links a[href^="http"]::after {
+      color: #555;
+      content: " (" attr(href) ")";
+      font-size: 0.8em;
+      text-decoration: none;
+    }
+
+    @page {
+      margin: 1.5cm;
+    }
+  }
+</style>

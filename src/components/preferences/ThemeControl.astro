@@ -1,0 +1,229 @@
+---
+import type { Locale, ThemePreference } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+
+interface Props {
+  locale: Locale;
+  id: string;
+}
+
+const { locale, id } = Astro.props;
+const labels = ui[locale].preferences;
+const options: readonly ThemePreference[] = ["system", "light", "dark"];
+---
+
+<div class="theme-control" data-theme-control>
+  <button
+    class="theme-control__trigger"
+    type="button"
+    aria-expanded="false"
+    aria-controls={id}
+    aria-label={`${labels.theme}: ${labels.themeOptions.system}`}
+    data-theme-trigger
+    data-theme-label={labels.theme}
+  >
+    <span class="theme-control__label">{labels.theme}</span>
+    <span class="theme-control__current" data-theme-current>{labels.themeOptions.system}</span>
+    <span class="theme-control__chevron" aria-hidden="true">⌄</span>
+  </button>
+
+  <div id={id} class="theme-control__menu" data-theme-menu hidden>
+    <div class="theme-control__options" role="group" aria-label={labels.theme}>
+      {options.map((option) => (
+        <button
+          type="button"
+          class="theme-control__option"
+          data-theme-value={option}
+          data-theme-name={labels.themeOptions[option]}
+          aria-pressed={option === "system" ? "true" : "false"}
+        >
+          {labels.themeOptions[option]}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
+<script>
+  type ThemePreference = "system" | "light" | "dark";
+
+  const storageKey = "theme";
+  const root = document.documentElement;
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+
+  const getPreference = (): ThemePreference => {
+    const explicitTheme = root.dataset.theme;
+    return explicitTheme === "light" || explicitTheme === "dark" ? explicitTheme : "system";
+  };
+
+  const updateThemeColor = (preference: ThemePreference) => {
+    const meta = document.querySelector<HTMLMetaElement>("meta[data-theme-color]");
+    if (!meta) return;
+
+    const resolved = preference === "system" ? (media.matches ? "dark" : "light") : preference;
+    meta.content = resolved === "dark" ? meta.dataset.dark ?? "#07080a" : meta.dataset.light ?? "#f4f3f0";
+  };
+
+  const updateControls = (preference: ThemePreference) => {
+    document.querySelectorAll<HTMLElement>("[data-theme-control]").forEach((control) => {
+      const trigger = control.querySelector<HTMLButtonElement>("[data-theme-trigger]");
+      const current = control.querySelector<HTMLElement>("[data-theme-current]");
+      const selected = control.querySelector<HTMLButtonElement>(`[data-theme-value="${preference}"]`);
+      const name = selected?.dataset.themeName ?? preference;
+
+      if (trigger) trigger.setAttribute("aria-label", `${trigger.dataset.themeLabel}: ${name}`);
+      if (current) current.textContent = name;
+
+      control.querySelectorAll<HTMLButtonElement>("[data-theme-value]").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.themeValue === preference));
+      });
+    });
+
+    updateThemeColor(preference);
+  };
+
+  const applyTheme = (preference: ThemePreference) => {
+    if (preference === "system") {
+      delete root.dataset.theme;
+      try {
+        localStorage.removeItem(storageKey);
+      } catch {}
+    } else {
+      root.dataset.theme = preference;
+      try {
+        localStorage.setItem(storageKey, preference);
+      } catch {}
+    }
+
+    updateControls(preference);
+  };
+
+  document.querySelectorAll<HTMLElement>("[data-theme-control]").forEach((control) => {
+    const trigger = control.querySelector<HTMLButtonElement>("[data-theme-trigger]");
+    const menu = control.querySelector<HTMLElement>("[data-theme-menu]");
+    if (!trigger || !menu || control.dataset.ready === "true") return;
+
+    control.dataset.ready = "true";
+
+    const setOpen = (open: boolean) => {
+      trigger.setAttribute("aria-expanded", String(open));
+      menu.hidden = !open;
+    };
+
+    trigger.addEventListener("click", () => {
+      setOpen(trigger.getAttribute("aria-expanded") !== "true");
+    });
+
+    menu.querySelectorAll<HTMLButtonElement>("[data-theme-value]").forEach((button) => {
+      button.addEventListener("click", () => {
+        applyTheme(button.dataset.themeValue as ThemePreference);
+        setOpen(false);
+        trigger.focus();
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || trigger.getAttribute("aria-expanded") !== "true") return;
+      setOpen(false);
+      trigger.focus();
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!control.contains(event.target as Node)) setOpen(false);
+    });
+  });
+
+  media.addEventListener("change", () => {
+    if (getPreference() === "system") updateThemeColor("system");
+  });
+
+  updateControls(getPreference());
+</script>
+
+<style>
+  .theme-control {
+    position: relative;
+  }
+
+  .theme-control__trigger {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.375rem 0.625rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-pill);
+    background: var(--color-control-background);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 650;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+
+  .theme-control__trigger:hover,
+  .theme-control__trigger[aria-expanded="true"] {
+    background: var(--color-control-active);
+    color: var(--color-text-primary);
+  }
+
+  .theme-control__label {
+    color: var(--color-text-muted);
+  }
+
+  .theme-control__chevron {
+    transform: translateY(-0.1rem);
+  }
+
+  .theme-control__menu:not([hidden]) {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + var(--space-2));
+    right: 0;
+    display: block;
+    min-width: 8.5rem;
+    padding: var(--space-2);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-medium);
+    background: var(--color-panel-background);
+    box-shadow: 0 1rem 3rem var(--color-shadow);
+  }
+
+  .theme-control__options {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .theme-control__option {
+    min-height: 2.5rem;
+    padding-inline: var(--space-3);
+    border: 0;
+    border-radius: var(--radius-small);
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .theme-control__option:hover,
+  .theme-control__option[aria-pressed="true"] {
+    background: var(--color-control-active);
+    color: var(--color-text-primary);
+  }
+
+  .theme-control__option[aria-pressed="true"]::after {
+    float: right;
+    color: var(--color-accent-bright);
+    content: "•";
+  }
+</style>

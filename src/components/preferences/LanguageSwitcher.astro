@@ -1,0 +1,76 @@
+---
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+import { getLocalizedPath } from "../../i18n/utils";
+
+interface Props {
+  locale: Locale;
+  currentPath: string;
+}
+
+const { locale, currentPath } = Astro.props;
+const labels = ui[locale].preferences;
+const options: ReadonlyArray<{ locale: Locale; label: string; lang: string }> = [
+  { locale: "pt-BR", label: "PT-BR", lang: "pt-BR" },
+  { locale: "en", label: "EN", lang: "en" },
+];
+---
+
+<nav class="language-switcher" aria-label={labels.language}>
+  {options.map((option) => (
+    <a
+      href={getLocalizedPath(currentPath, option.locale)}
+      class="language-switcher__option"
+      lang={option.lang}
+      hreflang={option.lang}
+      rel="alternate"
+      aria-current={locale === option.locale ? "page" : undefined}
+    >
+      {option.label}
+    </a>
+  ))}
+</nav>
+
+<style>
+  .language-switcher {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.1875rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-pill);
+    background: var(--color-control-background);
+  }
+
+  .language-switcher__option {
+    display: inline-flex;
+    min-width: 2.75rem;
+    min-height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    padding-inline: var(--space-2);
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+
+  .language-switcher__option:hover {
+    color: var(--color-text-primary);
+  }
+
+  .language-switcher__option[aria-current="page"] {
+    border-color: var(--color-border-subtle);
+    background: var(--color-control-active);
+    color: var(--color-text-primary);
+    box-shadow: 0 1px 0 var(--color-control-highlight) inset;
+  }
+</style>

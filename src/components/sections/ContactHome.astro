@@ -1,0 +1,113 @@
+---
+import { site } from "../../data/site";
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+import { getLocalizedPath } from "../../i18n/utils";
+import ExternalLink from "../ui/ExternalLink.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const content = ui[locale].home.contact;
+---
+
+<section id="contact" class="contact-home section-space" aria-labelledby="contact-home-title">
+  <div class="container-wide">
+    <SectionHeading
+      number={content.number}
+      eyebrow={content.eyebrow}
+      title={content.title}
+      headingId="contact-home-title"
+    />
+
+    <div class="contact-home__content editorial-grid">
+      <a class="contact-home__command" href={getLocalizedPath("/contact/", locale)}>
+        <span aria-hidden="true">$</span> {content.command} <span aria-hidden="true">→</span>
+      </a>
+      <p class="contact-home__description">{content.description}</p>
+      <div class="contact-home__links" aria-label={content.linksLabel}>
+        <a href={site.emailUrl}>Email <span aria-hidden="true">↗</span></a>
+        <ExternalLink href={site.githubUrl} relationship="me" {locale}>GitHub <span aria-hidden="true">↗</span></ExternalLink>
+        <ExternalLink href={site.linkedInUrl} relationship="me" {locale}>LinkedIn <span aria-hidden="true">↗</span></ExternalLink>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact-home {
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .contact-home__content {
+    align-items: end;
+    min-height: clamp(19rem, 38vw, 34rem);
+    margin-top: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  .contact-home__command {
+    grid-column: 1 / 4;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .contact-home__command:hover {
+    color: var(--color-accent-bright);
+  }
+
+  .contact-home__description {
+    grid-column: 4 / 9;
+    max-width: 36ch;
+    color: var(--color-text-secondary);
+    font-size: var(--text-body-large);
+  }
+
+  .contact-home__links {
+    display: grid;
+    grid-column: 10 / 13;
+    gap: var(--space-3);
+  }
+
+  .contact-home__links a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-border-subtle);
+    color: var(--color-text-primary);
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    font-weight: 620;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .contact-home__links a:hover {
+    border-color: var(--color-accent-bright);
+    color: var(--color-accent-bright);
+  }
+
+  @media (max-width: 48rem) {
+    .contact-home__content {
+      min-height: 22rem;
+      align-content: end;
+    }
+
+    .contact-home__command,
+    .contact-home__description,
+    .contact-home__links {
+      grid-column: 1 / -1;
+    }
+
+    .contact-home__description {
+      margin-top: var(--space-6);
+    }
+
+    .contact-home__links {
+      margin-top: var(--space-7);
+    }
+  }
+</style>

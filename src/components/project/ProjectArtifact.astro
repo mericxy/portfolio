@@ -1,0 +1,186 @@
+---
+import type { FeaturedProject } from "../../data/projects";
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+import ExternalLink from "../ui/ExternalLink.astro";
+
+interface Props {
+  project: FeaturedProject;
+  locale: Locale;
+  index: number;
+}
+
+const { project, locale, index } = Astro.props;
+const content = ui[locale].home.work;
+---
+
+<article class="project-artifact">
+  <div class="project-artifact__topline">
+    <p>{project.filePath}</p>
+    <p aria-label={`${content.projectLabel} ${index}`}>{String(index).padStart(2, "0")}</p>
+  </div>
+
+  <div class="project-artifact__body">
+    <h3>{project.name}</h3>
+    <p class="project-artifact__description">{project.description[locale]}</p>
+
+    <dl class="project-artifact__details">
+      <div>
+        <dt>{content.roleLabel}</dt>
+        <dd>{project.role[locale]}</dd>
+      </div>
+      <div>
+        <dt>{content.statusLabel}</dt>
+        <dd><span class="project-artifact__status" aria-hidden="true"></span>{content.liveStatus}</dd>
+      </div>
+    </dl>
+
+    <ul class="project-artifact__technologies" aria-label={content.technologiesLabel}>
+      {project.technologies.map((technology) => <li>{technology}</li>)}
+    </ul>
+  </div>
+
+  <div class="project-artifact__links">
+    <ExternalLink href={project.repositoryUrl} {locale}>
+      <span aria-hidden="true">&gt;</span> {content.repositoryAction}
+    </ExternalLink>
+    <ExternalLink href={project.liveUrl} {locale}>
+      <span aria-hidden="true">&gt;</span> {content.liveAction}
+    </ExternalLink>
+  </div>
+</article>
+
+<style>
+  .project-artifact {
+    display: grid;
+    min-height: 31rem;
+    padding: clamp(1.25rem, 2.5vw, 2.25rem);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-small);
+    background: rgb(var(--color-accent-rgb) / 1.5%);
+    grid-template-rows: auto 1fr auto;
+    transition:
+      border-color var(--duration-normal) var(--ease-standard),
+      background-color var(--duration-normal) var(--ease-standard),
+      transform var(--duration-normal) var(--ease-standard);
+  }
+
+  .project-artifact:hover {
+    border-color: rgb(var(--color-accent-rgb) / 34%);
+    background: rgb(var(--color-accent-rgb) / 3%);
+    transform: translateY(-2px);
+  }
+
+  .project-artifact__topline,
+  .project-artifact__links,
+  .project-artifact__details,
+  .project-artifact__technologies {
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+  }
+
+  .project-artifact__topline {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    color: var(--color-text-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .project-artifact__body {
+    align-self: end;
+    padding-block: var(--space-7) var(--space-6);
+  }
+
+  h3 {
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 5vw, 5.25rem);
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 64, "SOFT" 18, "WONK" 0.1;
+    font-weight: 580;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+  }
+
+  .project-artifact__description {
+    max-width: 48ch;
+    margin-top: var(--space-5);
+    color: var(--color-text-secondary);
+  }
+
+  .project-artifact__details {
+    display: grid;
+    margin-block: var(--space-6) 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .project-artifact__details div {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  dt {
+    color: var(--color-text-muted);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  dd {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--color-text-primary);
+  }
+
+  .project-artifact__status {
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 50%;
+    background: var(--color-accent-bright);
+  }
+
+  .project-artifact__technologies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+    list-style: none;
+  }
+
+  .project-artifact__technologies li:not(:last-child)::after {
+    margin-left: var(--space-2);
+    color: rgb(var(--color-accent-rgb) / 55%);
+    content: "/";
+  }
+
+  .project-artifact__links {
+    display: flex;
+    gap: var(--space-5);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border-subtle);
+    color: var(--color-accent-bright);
+    font-weight: 650;
+    letter-spacing: 0.03em;
+  }
+
+  .project-artifact__links a {
+    text-decoration: none;
+  }
+
+  .project-artifact__links a:hover {
+    color: var(--color-text-primary);
+  }
+
+  @media (max-width: 40rem) {
+    .project-artifact {
+      min-height: 27rem;
+    }
+
+    .project-artifact__details {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

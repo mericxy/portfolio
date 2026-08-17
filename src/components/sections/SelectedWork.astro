@@ -1,0 +1,76 @@
+---
+import { featuredProjects } from "../../data/projects";
+import { site } from "../../data/site";
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+import ProjectArtifact from "../project/ProjectArtifact.astro";
+import ExternalLink from "../ui/ExternalLink.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const content = ui[locale].home.work;
+---
+
+<section id="work" class="selected-work section-space" aria-labelledby="selected-work-title">
+  <div class="container-wide">
+    <SectionHeading
+      number={content.number}
+      eyebrow={content.eyebrow}
+      title={content.title}
+      description={content.description}
+      headingId="selected-work-title"
+    />
+
+    <div class="selected-work__grid">
+      {featuredProjects.map((project, index) => (
+        <ProjectArtifact {project} {locale} index={index + 1} />
+      ))}
+    </div>
+
+    <div class="selected-work__footer">
+      <ExternalLink href={site.githubUrl} relationship="me" {locale}>
+        {content.viewProjects} <span aria-hidden="true">↗</span>
+      </ExternalLink>
+    </div>
+  </div>
+</section>
+
+<style>
+  .selected-work {
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .selected-work__grid {
+    display: grid;
+    margin-top: clamp(3.5rem, 8vw, 7rem);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--grid-gap);
+  }
+
+  .selected-work__footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-6);
+  }
+
+  .selected-work__footer a {
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    font-weight: 650;
+    letter-spacing: var(--tracking-label);
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .selected-work__footer a:hover {
+    color: var(--color-accent-bright);
+  }
+
+  @media (max-width: 48rem) {
+    .selected-work__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,18 @@
+---
+import DefaultLayout from "../../layouts/DefaultLayout.astro";
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const content = ui[locale].about;
+---
+
+<DefaultLayout {locale} title={content.title} description={content.description}>
+  <div class="page-content container">
+    <section class="stack-md">
+      <h1 class="page-title">{content.heading}</h1>
+      {content.paragraphs.map((paragraph) => <p class="body-copy body-copy--large">{paragraph}</p>)}
+    </section>
+  </div>
+</DefaultLayout>

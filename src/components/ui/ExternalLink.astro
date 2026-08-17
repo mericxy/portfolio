@@ -1,0 +1,19 @@
+---
+import type { Locale } from "../../i18n/ui";
+import { defaultLocale, ui } from "../../i18n/ui";
+
+interface Props {
+  href: string;
+  class?: string;
+  relationship?: string;
+  locale?: Locale;
+}
+
+const { href, class: className, relationship, locale = defaultLocale } = Astro.props;
+const rel = ["noopener", "noreferrer", relationship].filter(Boolean).join(" ");
+---
+
+<a href={href} target="_blank" rel={rel} class={className}>
+  <slot />
+  <span class="sr-only"> ({ui[locale].common.opensInNewTab})</span>
+</a>

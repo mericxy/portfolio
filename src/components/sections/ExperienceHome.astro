@@ -1,0 +1,153 @@
+---
+import { experienceEntries, formatExperiencePeriod } from "../../data/experience";
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const content = ui[locale].home.experience;
+const featuredExperience = experienceEntries.filter((experience) => experience.featured);
+---
+
+<section id="experience" class="experience section-space" aria-labelledby="experience-title">
+  <div class="container-wide">
+    <SectionHeading
+      number={content.number}
+      eyebrow={content.eyebrow}
+      title={content.title}
+      description={content.description}
+      headingId="experience-title"
+    />
+
+    <div class="experience__content editorial-grid">
+      <p class="experience__annotation">{content.annotation}</p>
+      <ol class="experience__list">
+        {featuredExperience.map((item, index) => (
+          <li class="experience__item">
+            <div class="experience__index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</div>
+            <div class="experience__period">{formatExperiencePeriod(item, locale, content.present)}</div>
+            <div class="experience__main">
+              <h3>{item.role[locale]}</h3>
+              <p class="experience__organization">{item.organization}</p>
+              <p class="experience__description">{item.description[locale]}</p>
+              <ul class="experience__technologies" aria-label={`${content.technologiesLabel} ${item.role[locale]}`}>
+                {item.technologies[locale].map((technology) => <li>{technology}</li>)}
+              </ul>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .experience {
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .experience__content {
+    align-items: start;
+    margin-top: clamp(3.5rem, 8vw, 7rem);
+  }
+
+  .experience__annotation,
+  .experience__index,
+  .experience__period,
+  .experience__technologies {
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+  }
+
+  .experience__annotation {
+    grid-column: 1 / 4;
+    color: var(--color-text-muted);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .experience__list {
+    grid-column: 4 / 13;
+    list-style: none;
+  }
+
+  .experience__item {
+    display: grid;
+    padding-block: clamp(1.75rem, 4vw, 3rem);
+    border-top: 1px solid var(--color-border-subtle);
+    grid-template-columns: 3rem minmax(8rem, 0.65fr) minmax(0, 1.7fr);
+    gap: var(--grid-gap);
+  }
+
+  .experience__item:last-child {
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .experience__index,
+  .experience__period {
+    padding-top: 0.35rem;
+    color: var(--color-text-muted);
+  }
+
+  .experience__main h3 {
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.5vw, 3rem);
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 48, "SOFT" 18, "WONK" 0.1;
+    font-weight: 580;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  .experience__organization {
+    margin-top: var(--space-2);
+    color: var(--color-accent-bright);
+    font-weight: 620;
+  }
+
+  .experience__description {
+    max-width: 54ch;
+    margin-top: var(--space-5);
+    color: var(--color-text-secondary);
+  }
+
+  .experience__technologies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+    color: var(--color-text-muted);
+    list-style: none;
+  }
+
+  .experience__technologies li:not(:last-child)::after {
+    margin-left: var(--space-2);
+    color: rgb(var(--color-accent-rgb) / 55%);
+    content: "/";
+  }
+
+  @media (max-width: 48rem) {
+    .experience__annotation,
+    .experience__list {
+      grid-column: 1 / -1;
+    }
+
+    .experience__list {
+      margin-top: var(--space-7);
+    }
+
+    .experience__item {
+      grid-template-columns: 2rem 1fr;
+    }
+
+    .experience__period {
+      grid-column: 2;
+    }
+
+    .experience__main {
+      grid-column: 2;
+    }
+  }
+</style>

@@ -1,35 +1,94 @@
 ---
-const { title = "Márcio Valente" } = Astro.props;
+import SiteFooter from "../components/layout/SiteFooter.astro";
+import SiteHeader from "../components/layout/SiteHeader.astro";
+import { site } from "../data/site";
+import type { Locale } from "../i18n/ui";
+import { defaultLocale, ui } from "../i18n/ui";
+import { getLocalizedPath } from "../i18n/utils";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string | URL;
+  locale?: Locale;
+}
+
+const {
+  title,
+  locale = defaultLocale,
+  description = ui[locale].meta.description,
+  canonical,
+} = Astro.props;
+
+const documentTitle = title ? `${title} — ${site.name}` : ui[locale].meta.defaultTitle;
+const canonicalUrl = canonical
+  ? new URL(canonical, Astro.url)
+  : Astro.site
+    ? new URL(Astro.url.pathname, Astro.site)
+    : undefined;
+const alternateLocale: Locale = locale === "pt-BR" ? "en" : "pt-BR";
+const portugueseUrl = Astro.site ? new URL(getLocalizedPath(Astro.url.pathname, "pt-BR"), Astro.site) : undefined;
+const englishUrl = Astro.site ? new URL(getLocalizedPath(Astro.url.pathname, "en"), Astro.site) : undefined;
 ---
 
-<html lang="en">
+<!doctype html>
+<html lang={locale}>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>{title}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content={site.themeColors.light} data-theme-color data-light={site.themeColors.light} data-dark={site.themeColors.dark} />
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline>
+      (() => {
+        try {
+          const saved = localStorage.getItem("theme");
+          const root = document.documentElement;
+          if (saved === "light" || saved === "dark") root.dataset.theme = saved;
+          else root.removeAttribute("data-theme");
+          const dark = saved === "dark" || (saved !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+          const meta = document.querySelector("meta[data-theme-color]");
+          if (meta) meta.content = dark ? meta.dataset.dark : meta.dataset.light;
+        } catch {}
+      })();
+    </script>
+    <title>{documentTitle}</title>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href="/fonts/Fraunces-Variable.ttf" as="font" type="font/ttf" crossorigin />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {portugueseUrl && <link rel="alternate" hreflang="pt-BR" href={portugueseUrl} />}
+    {englishUrl && <link rel="alternate" hreflang="en" href={englishUrl} />}
+    {portugueseUrl && <link rel="alternate" hreflang="x-default" href={portugueseUrl} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={ui[locale].meta.ogLocale} />
+    <meta property="og:locale:alternate" content={ui[alternateLocale].meta.ogLocale} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={documentTitle} />
+    <meta property="og:description" content={description} />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={documentTitle} />
+    <meta name="twitter:description" content={description} />
   </head>
-  <body class="bg-white text-gray-900 font-sans antialiased">
-    <!-- Navbar -->
-    <header class="p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
-      <nav class="flex justify-between items-center max-w-5xl mx-auto">
-        <a href="/" class="text-xl font-bold tracking-tight hover:text-blue-600 transition">Portfolio</a>
-        <ul class="flex gap-6 text-sm font-medium">
-          <li><a href="/about/" class="hover:text-blue-600 transition">About</a></li>
-          <li><a href="/projects/" class="hover:text-blue-600 transition">Projects</a></li>
-          <li><a href="/contact/" class="hover:text-blue-600 transition">Contact</a></li>
-        </ul>
-      </nav>
-    </header>
+  <body>
+    <a class="skip-link" href="#main-content">{ui[locale].common.skipToContent}</a>
 
-    <!-- Main -->
-    <main class="max-w-5xl mx-auto p-6">
-      <slot />
-    </main>
+    <div class="page-backdrop" aria-hidden="true">
+      <div class="page-backdrop__grid"></div>
+      <div class="page-backdrop__glow"></div>
+    </div>
 
-    <!-- Footer -->
-    <footer class="p-6 text-center text-sm text-gray-500 border-t border-gray-200">
-      © {new Date().getFullYear()} Márcio Éric
-    </footer>
+    <div class="site-shell">
+      <SiteHeader currentPath={Astro.url.pathname} {locale} />
+      <main id="main-content" class="site-main" tabindex="-1">
+        <slot />
+      </main>
+      <SiteFooter {locale} />
+    </div>
   </body>
 </html>

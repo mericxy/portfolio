@@ -1,0 +1,177 @@
+---
+import { getGitHubLanguageDistribution } from "../../data/github";
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const content = ui[locale].home.engineering;
+const languageResult = await getGitHubLanguageDistribution();
+const hasLiveData = languageResult.available && languageResult.data.languages.length > 0;
+const technologies = hasLiveData
+  ? languageResult.data.languages
+  : content.fallbackTechnologies.map((language) => ({ language, bytes: 0, percentage: 0 }));
+const repositoriesAnalyzed = content.repositoriesAnalyzed.replace(
+  "{count}",
+  String(languageResult.data.repositoriesAnalyzed),
+);
+---
+
+<section id="engineering" class="engineering section-space" aria-labelledby="engineering-title">
+  <div class="container-wide">
+    <SectionHeading
+      number={content.number}
+      eyebrow={content.eyebrow}
+      title={content.title}
+      description={content.description}
+      headingId="engineering-title"
+    />
+
+    <div class="engineering__content editorial-grid">
+      <div class="engineering__source">
+        <p>{content.annotation}</p>
+        <p class="engineering__source-state">{hasLiveData ? content.liveSource : content.fallbackSource}</p>
+        {hasLiveData && <p>{repositoriesAnalyzed}</p>}
+      </div>
+
+      <div class="engineering__visualization">
+        <p class="engineering__label">{content.distributionLabel}</p>
+        <ol class:list={["engineering__languages", !hasLiveData && "engineering__languages--fallback"]}>
+          {technologies.map((item, index) => (
+            <li>
+              <span class="engineering__rank">{String(index + 1).padStart(2, "0")}</span>
+              <span class="engineering__language">{item.language}</span>
+              {hasLiveData && (
+                <>
+                  <span class="engineering__percentage">{item.percentage.toFixed(1)}%</span>
+                  <span class="engineering__bar" aria-hidden="true">
+                    <span style={`--language-size: ${item.percentage}%`}></span>
+                  </span>
+                </>
+              )}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .engineering {
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .engineering__content {
+    margin-top: clamp(3.5rem, 8vw, 7rem);
+  }
+
+  .engineering__source {
+    display: grid;
+    grid-column: 1 / 4;
+    align-content: start;
+    gap: var(--space-3);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    letter-spacing: 0.05em;
+  }
+
+  .engineering__source-state {
+    color: var(--color-text-secondary);
+  }
+
+  .engineering__visualization {
+    grid-column: 4 / 13;
+  }
+
+  .engineering__label {
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border-subtle);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .engineering__languages {
+    list-style: none;
+  }
+
+  .engineering__languages li {
+    display: grid;
+    min-height: 5.25rem;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border-subtle);
+    grid-template-columns: 3rem minmax(8rem, 1fr) 5rem minmax(10rem, 1.25fr);
+    gap: var(--space-4);
+  }
+
+  .engineering__rank,
+  .engineering__percentage {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+  }
+
+  .engineering__language {
+    color: var(--color-text-primary);
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    font-weight: 620;
+    letter-spacing: -0.02em;
+  }
+
+  .engineering__percentage {
+    text-align: right;
+  }
+
+  .engineering__bar {
+    display: block;
+    height: 2px;
+    background: var(--color-border-subtle);
+  }
+
+  .engineering__bar span {
+    display: block;
+    width: var(--language-size);
+    height: 100%;
+    background: var(--color-accent-bright);
+  }
+
+  .engineering__languages li:nth-child(2) .engineering__bar span { opacity: 0.78; }
+  .engineering__languages li:nth-child(3) .engineering__bar span { opacity: 0.62; }
+  .engineering__languages li:nth-child(4) .engineering__bar span { opacity: 0.48; }
+  .engineering__languages li:nth-child(n + 5) .engineering__bar span { opacity: 0.34; }
+
+  .engineering__languages--fallback li {
+    grid-template-columns: 3rem 1fr;
+  }
+
+  @media (max-width: 48rem) {
+    .engineering__source,
+    .engineering__visualization {
+      grid-column: 1 / -1;
+    }
+
+    .engineering__visualization {
+      margin-top: var(--space-7);
+    }
+
+    .engineering__languages li {
+      min-height: 4.75rem;
+      grid-template-columns: 2rem minmax(7rem, 1fr) 4rem;
+    }
+
+    .engineering__bar {
+      grid-column: 2 / -1;
+      margin-top: calc(-1 * var(--space-3));
+      margin-bottom: var(--space-3);
+    }
+
+    .engineering__languages--fallback li {
+      grid-template-columns: 2rem 1fr;
+    }
+  }
+</style>

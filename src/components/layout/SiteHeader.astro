@@ -1,0 +1,251 @@
+---
+import { site } from "../../data/site";
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+import { getHomePath, getLocalizedPath } from "../../i18n/utils";
+import LanguageSwitcher from "../preferences/LanguageSwitcher.astro";
+import ThemeControl from "../preferences/ThemeControl.astro";
+
+interface Props {
+  currentPath: string;
+  locale: Locale;
+}
+
+const { currentPath, locale } = Astro.props;
+const labels = ui[locale].navigation;
+const homePath = getHomePath(locale);
+const resumePath = getLocalizedPath("/resume/", locale);
+const navigation = [
+  { label: labels.work, href: `${homePath}#work` },
+  { label: labels.about, href: getLocalizedPath("/about/", locale) },
+  { label: labels.contact, href: getLocalizedPath("/contact/", locale) },
+];
+const isActive = (href: string) => {
+  if (href.includes("#")) return false;
+  const path = currentPath.endsWith("/") ? currentPath : `${currentPath}/`;
+  return path === href || path.startsWith(href);
+};
+---
+
+<header class="site-header" data-site-header>
+  <div class="site-header__inner container-wide">
+    <a class="site-mark" href={homePath} aria-label={`${site.name} — ${labels.home}`} aria-current={currentPath === homePath ? "page" : undefined}>
+      <img class="site-mark__icon" src="/favicon.svg" alt="" width="32" height="32" aria-hidden="true" />
+    </a>
+
+    <div class="site-header__desktop">
+      <nav class="desktop-navigation" aria-label={labels.primaryLabel}>
+        <ul class="site-navigation">
+          {navigation.map((item) => (
+            <li><a class="site-navigation__link" href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>{item.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <a class="resume-link" href={resumePath} aria-current={isActive(resumePath) ? "page" : undefined}>
+        {labels.resume} <span aria-hidden="true">↗</span>
+      </a>
+      <div class="site-preferences">
+        <LanguageSwitcher {locale} {currentPath} />
+        <ThemeControl {locale} id={`desktop-theme-${locale}`} />
+      </div>
+    </div>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-navigation" data-menu-toggle data-open-label={labels.menu} data-close-label={labels.close}>
+      <span data-menu-label>{labels.menu}</span>
+      <span class="menu-toggle__icon" aria-hidden="true"><span></span><span></span></span>
+    </button>
+
+    <nav id="mobile-navigation" class="mobile-navigation" aria-label={labels.mobileLabel} data-mobile-navigation hidden>
+      <ul class="mobile-navigation__list">
+        {navigation.map((item) => (
+          <li><a class="mobile-navigation__link" href={item.href} aria-current={isActive(item.href) ? "page" : undefined}><span>{item.label}</span><span aria-hidden="true">→</span></a></li>
+        ))}
+        <li><a class="mobile-navigation__link" href={resumePath} aria-current={isActive(resumePath) ? "page" : undefined}><span>{labels.resume}</span><span aria-hidden="true">↗</span></a></li>
+      </ul>
+      <div class="mobile-preferences">
+        <LanguageSwitcher {locale} {currentPath} />
+        <ThemeControl {locale} id={`mobile-theme-${locale}`} />
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-site-header]").forEach((header) => {
+    const toggle = header.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+    const navigation = header.querySelector<HTMLElement>("[data-mobile-navigation]");
+    const label = header.querySelector<HTMLElement>("[data-menu-label]");
+    if (!toggle || !navigation || !label) return;
+
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute("aria-expanded", String(open));
+      label.textContent = open ? toggle.dataset.closeLabel ?? "Close" : toggle.dataset.openLabel ?? "Menu";
+      navigation.hidden = !open;
+      header.toggleAttribute("data-menu-open", open);
+    };
+    toggle.addEventListener("click", () => setOpen(toggle.getAttribute("aria-expanded") !== "true"));
+    navigation.addEventListener("click", (event) => {
+      if ((event.target as Element).closest("a")) setOpen(false);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || toggle.getAttribute("aria-expanded") !== "true") return;
+      setOpen(false);
+      toggle.focus();
+    });
+    document.addEventListener("click", (event) => {
+      if (!header.contains(event.target as Node)) setOpen(false);
+    });
+    window.matchMedia("(min-width: 48.0625rem)").addEventListener("change", () => setOpen(false));
+  });
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+    background: var(--color-header-background);
+    backdrop-filter: blur(18px) saturate(115%);
+  }
+  .site-header__inner {
+    position: relative;
+    display: flex;
+    min-height: var(--header-height);
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+  .site-mark {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    text-decoration: none;
+    transition: opacity var(--duration-fast) var(--ease-standard);
+  }
+  .site-mark:hover { opacity: 0.68; }
+  .site-mark__icon {
+    width: 2rem;
+    height: 2rem;
+  }
+  .site-header__desktop,
+  .site-preferences,
+  .site-navigation { display: flex; align-items: center; }
+  .site-header__desktop { gap: clamp(1rem, 2.5vw, 2.5rem); }
+  .site-preferences { gap: var(--space-2); }
+  .site-navigation { gap: clamp(0.875rem, 2vw, 2rem); list-style: none; }
+  .site-navigation__link {
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .site-navigation__link:hover,
+  .site-navigation__link[aria-current="page"] { color: var(--color-text-primary); }
+  .site-navigation__link[aria-current="page"] { color: var(--color-accent-bright); }
+  .resume-link {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    gap: var(--space-2);
+    padding-inline: var(--space-3);
+    border-left: 1px solid var(--color-border-subtle);
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 650;
+    letter-spacing: var(--tracking-label);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .resume-link:hover,
+  .resume-link[aria-current="page"] { color: var(--color-accent-bright); }
+  .menu-toggle,
+  .mobile-navigation { display: none; }
+
+  @media (max-width: 60rem) {
+    .site-header__desktop { gap: var(--space-4); }
+    .site-navigation { gap: var(--space-4); }
+  }
+
+  @media (max-width: 48rem) {
+    .site-header__desktop { display: none; }
+    .menu-toggle {
+      display: inline-flex;
+      min-width: 4.75rem;
+      min-height: 2.75rem;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--space-3);
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+    }
+    .menu-toggle__icon { position: relative; display: block; width: 1rem; height: 0.75rem; }
+    .menu-toggle__icon span {
+      position: absolute;
+      right: 0;
+      width: 100%;
+      height: 1px;
+      background: currentColor;
+      transition: top var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
+    }
+    .menu-toggle__icon span:first-child { top: 0.2rem; }
+    .menu-toggle__icon span:last-child { top: 0.55rem; }
+    [data-menu-open] .menu-toggle__icon span:first-child { top: 0.375rem; transform: rotate(45deg); }
+    [data-menu-open] .menu-toggle__icon span:last-child { top: 0.375rem; transform: rotate(-45deg); }
+    .mobile-navigation:not([hidden]) {
+      position: absolute;
+      top: calc(100% + var(--space-2));
+      right: var(--page-padding);
+      left: var(--page-padding);
+      display: block;
+      padding: var(--space-3);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-medium);
+      background: var(--color-panel-background);
+      box-shadow: 0 1.5rem 4rem var(--color-shadow);
+      backdrop-filter: blur(18px);
+    }
+    .mobile-navigation__list { list-style: none; }
+    .mobile-navigation__link {
+      display: flex;
+      min-height: 3.25rem;
+      align-items: center;
+      justify-content: space-between;
+      padding-inline: var(--space-3);
+      border-radius: var(--radius-small);
+      color: var(--color-text-secondary);
+      font-family: var(--font-mono);
+      font-size: var(--text-caption);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+    }
+    .mobile-navigation__link:hover,
+    .mobile-navigation__link[aria-current="page"] { background: var(--color-control-background); color: var(--color-text-primary); }
+    .mobile-preferences {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-top: var(--space-2);
+      padding: var(--space-3);
+      border-top: 1px solid var(--color-border-subtle);
+    }
+  }
+</style>

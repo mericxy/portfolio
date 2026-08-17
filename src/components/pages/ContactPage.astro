@@ -1,0 +1,25 @@
+---
+import DefaultLayout from "../../layouts/DefaultLayout.astro";
+import { site } from "../../data/site";
+import type { Locale } from "../../i18n/ui";
+import { ui } from "../../i18n/ui";
+import ExternalLink from "../ui/ExternalLink.astro";
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const content = ui[locale].contact;
+---
+
+<DefaultLayout {locale} title={content.title} description={content.description}>
+  <div class="page-content container">
+    <section class="stack-md">
+      <h1 class="page-title">{content.heading}</h1>
+      <p class="body-copy body-copy--large">{content.intro}</p>
+      <ul class="list-none space-y-3">
+        <li><a href={site.emailUrl} class="text-link">Email: {site.email}</a></li>
+        <li><ExternalLink href={site.githubUrl} class="text-link" relationship="me" {locale}>GitHub: github.com/mericxy</ExternalLink></li>
+        <li><ExternalLink href={site.linkedInUrl} class="text-link" relationship="me" {locale}>LinkedIn: linkedin.com/in/marcioericlvalente</ExternalLink></li>
+      </ul>
+    </section>
+  </div>
+</DefaultLayout>
